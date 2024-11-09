@@ -1,48 +1,60 @@
 import { loadStripe } from "@stripe/stripe-js";
 import React from "react";
-import { useAuth } from "../contexts/AuthContext"; // Correct import
+import { useAuth } from "../contexts/AuthContext";
 import { recordPurchase } from "../utils/recordPurchase";
 
+// Move this to an environment variable in production
 const stripePromise = loadStripe(
   "pk_test_51QFT2uDsfkJdeFG0y2nD4ohx5LZeilJEJrUixexlAB3hrMoerL0ARJ6xB4ZwvH1NOf2pz9Hcq9Wt10h0Xa8vc2lD00LDzQL8r4"
 );
 
-const PurchaseButton = () => {
-  const { user } = useAuth(); // Access user information from context
-  const domain = window.location.host;
-  console.log(domain);
+const PurchaseButton = ({ courseId }) => {
+  const { user } = useAuth();
 
   const handlePurchase = async () => {
     const stripe = await stripePromise;
 
     try {
-      const response = await fetch(domain + "/create-checkout-session", {
+      // Use absolute URL for API endpoint
+      const response = await fetch("/api/create-checkout-session", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          // Include necessary data
+          courseId,
+          userId: user?.uid,
+          // Add any other necessary data
         }),
       });
-      console.log(`${window.location.origin}/create-checkout-session`);
 
       if (!response.ok) {
-        throw new Error("Network response was not ok");
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const session = await response.json();
-      const result = await stripe.redirectToCheckout({ sessionId: session.id });
 
-      if (result.error) {
-        alert(result.error.message);
+      if (session.url) {
+        // Redirect to Checkout using the session URL
+        window.location.href = session.url;
       } else {
-        // Ensure session.courseId is defined
-        await recordPurchase(user.uid, session.courseId); // Adjust to include the course ID
+        // Legacy approach using redirectToCheckout
+        const result = await stripe.redirectToCheckout({
+          sessionId: session.id,
+        });
+
+        if (result.error) {
+          throw new Error(result.error.message);
+        }
+      }
+
+      // Record purchase after successful redirect
+      if (session.courseId) {
+        await recordPurchase(user.uid, session.courseId);
       }
     } catch (error) {
       console.error("Error during checkout:", error);
-      alert("An error occurred. Please try again.");
+      alert("An error occurred during checkout. Please try again.");
     }
   };
 
