@@ -1,82 +1,81 @@
-import { loadStripe } from "@stripe/stripe-js";
-import React, { useState } from "react";
-import { useAuth } from "../contexts/AuthContext";
+const express = require("express");
+const cors = require("cors");
+const dotenv = require("dotenv");
 
-const stripePromise = loadStripe(
-  process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY ||
-    "pk_test_51QFT2uDsfkJdeFG0y2nD4ohx5LZeilJEJrUixexlAB3hrMoerL0ARJ6xB4ZwvH1NOf2pz9Hcq9Wt10h0Xa8vc2lD00LDzQL8r4"
+dotenv.config();
+
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+
+const app = express();
+
+// CORS configuration for both environments
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      const allowedOrigins = [
+        "http://localhost:3000",
+        "https://it101-website.vercel.app",
+      ];
+
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.indexOf(origin) === -1) {
+        const msg =
+          "The CORS policy for this site does not allow access from the specified Origin.";
+        return callback(new Error(msg), false);
+      }
+      return callback(null, true);
+    },
+    credentials: true,
+  })
 );
 
-// Helper function to get the API URL
-const getApiUrl = () => {
-  if (process.env.NODE_ENV === "production") {
-    return "https://it101-website.vercel.app"; // Replace with your deployed backend URL
-  }
-  return "http://localhost:4000"; // Local development
-};
+app.use(express.json());
 
-const PurchaseButton = ({ courseId }) => {
-  const { user } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
+app.post("/create-checkout-session", async (req, res) => {
+  try {
+    const { courseId, userId } = req.body;
 
-  const handlePurchase = async () => {
-    if (!user) {
-      alert("Please sign in to purchase the course");
-      return;
-    }
+    // Determine the success and cancel URLs based on the request origin
+    const baseUrl = req.headers.origin || "https://it101-website.vercel.app";
 
-    setIsLoading(true);
-    const stripe = await stripePromise;
-
-    try {
-      const response = await fetch(`${getApiUrl()}/create-checkout-session`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: "IT-101",
+            },
+            unit_amount: 2000,
+          },
+          quantity: 1,
         },
-        body: JSON.stringify({
-          courseId,
-          userId: user?.uid,
-        }),
-      });
+      ],
+      mode: "payment",
+      success_url: `${baseUrl}/success`,
+      cancel_url: `${baseUrl}/cancel`,
+      metadata: {
+        courseId,
+        userId,
+      },
+    });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to create checkout session");
-      }
+    res.json({ url: session.url, id: session.id });
+  } catch (error) {
+    console.error("Error creating checkout session:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
-      const session = await response.json();
+// Start server only in development
+if (process.env.NODE_ENV !== "production") {
+  const PORT = process.env.PORT || 4000;
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+}
 
-      if (session.url) {
-        window.location.href = session.url;
-      } else {
-        const result = await stripe.redirectToCheckout({
-          sessionId: session.id,
-        });
-
-        if (result.error) {
-          throw new Error(result.error.message);
-        }
-      }
-    } catch (error) {
-      console.error("Error during checkout:", error);
-      alert("An error occurred during checkout. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <button
-      onClick={handlePurchase}
-      disabled={isLoading}
-      className={`inline-flex items-center bg-[#47AAB1] border-0 py-1 px-3 focus:outline-none hover:bg-[#68A8C2] rounded text-lg font-bold mt-4 lg:mt-0 ${
-        isLoading ? "opacity-50 cursor-not-allowed" : ""
-      }`}
-    >
-      {isLoading ? "Processing..." : "Purchase Course"}
-    </button>
-  );
-};
-
-export default PurchaseButton;
+module.exports = app;

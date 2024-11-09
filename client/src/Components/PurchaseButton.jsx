@@ -6,6 +6,14 @@ const stripePromise = loadStripe(
   "pk_test_51QFT2uDsfkJdeFG0y2nD4ohx5LZeilJEJrUixexlAB3hrMoerL0ARJ6xB4ZwvH1NOf2pz9Hcq9Wt10h0Xa8vc2lD00LDzQL8r4"
 );
 
+// Helper function to determine the API URL based on environment
+const getApiUrl = () => {
+  if (window.location.hostname === "localhost") {
+    return "http://localhost:4000/create-checkout-session";
+  }
+  return "https://it101-website.vercel.app/create-checkout-session";
+};
+
 const PurchaseButton = ({ courseId }) => {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
@@ -20,20 +28,16 @@ const PurchaseButton = ({ courseId }) => {
     const stripe = await stripePromise;
 
     try {
-      // Use the full URL of your backend server
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/create-checkout-session`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            courseId,
-            userId: user?.uid,
-          }),
-        }
-      );
+      const response = await fetch(getApiUrl(), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          courseId,
+          userId: user?.uid,
+        }),
+      });
 
       if (!response.ok) {
         const errorData = await response.json();
