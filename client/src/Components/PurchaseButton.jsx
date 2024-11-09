@@ -26,6 +26,7 @@ const PurchaseButton = () => {
           }),
         }
       );
+      console.log(`${window.location.origin}/create-checkout-session`);
 
       if (!response.ok) {
         throw new Error("Network response was not ok");
