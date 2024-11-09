@@ -40,7 +40,7 @@ app.post("/create-checkout-session", async (req, res) => {
 
 // Start the server only if not being run in Vercel (for local development)
 if (require.main === module) {
-  const PORT = process.env.PORT || 3001;
+  const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
   });

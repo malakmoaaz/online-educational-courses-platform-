@@ -9,23 +9,22 @@ const stripePromise = loadStripe(
 
 const PurchaseButton = () => {
   const { user } = useAuth(); // Access user information from context
+  const domain = window.location.host;
+  console.log(domain);
 
   const handlePurchase = async () => {
     const stripe = await stripePromise;
 
     try {
-      const response = await fetch(
-        `${window.location.origin}/create-checkout-session`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            // Include necessary data
-          }),
-        }
-      );
+      const response = await fetch(domain + "/create-checkout-session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          // Include necessary data
+        }),
+      });
       console.log(`${window.location.origin}/create-checkout-session`);
 
       if (!response.ok) {
