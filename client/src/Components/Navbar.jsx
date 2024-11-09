@@ -45,7 +45,7 @@ function Navbar({ introHeight }) {
         {/* Navbar Links */}
         <nav className="lg:ml-auto lg:mr-auto flex flex-wrap items-center text-xl font-bold justify-center">
           <span
-            onClick={scrollToIntroductionEnd}
+            onClick={() => scrollToIntroductionEnd()}
             className="mr-5 hover:text-gray-900 cursor-pointer"
           >
             Introduction

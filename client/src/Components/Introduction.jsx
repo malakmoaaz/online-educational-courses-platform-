@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Element } from "react-scroll";
 import students from "../assets/students.png";
-import { useAuth } from "../contexts/AuthContext"; // Import useAuth
+import { useAuth } from "../contexts/AuthContext";
 import { createUserDocument } from "../utils/createUserDocument";
 
 function Introduction() {
-  const { user } = useAuth(); // Access user from the AuthContext
+  const { user } = useAuth();
   const introRef = useRef(null);
   const [introHeight, setIntroHeight] = useState(0);
 
@@ -19,12 +19,9 @@ function Introduction() {
     try {
       if (!user) {
         console.log("User is not authenticated. Please log in first.");
-        return; // Exit if user is not logged in
+        return;
       }
-
-      console.log("User is authenticated:", user);
-      console.log("Attempting to create user document...");
-      await createUserDocument(user); // Pass user to the function
+      await createUserDocument(user);
       console.log("User document created on enrollment.");
     } catch (error) {
       console.error("Error creating user document on enroll:", error);
@@ -34,48 +31,35 @@ function Introduction() {
   return (
     <Element
       name="introduction"
-      className="introduction-section container mx-auto flex px-5 flex-col items-center"
+      className="container mx-auto py-16 px-5 sm:py-20 lg:py-24 flex flex-wrap items-center"
       ref={introRef}
     >
-      <div className="flex">
-        <div className="lg:flex-grow xl:w-3/5 xl:pr-24 flex flex-col md:items-start md:text-left mb-16 md:mb-0 items-center text-center">
-          <div className="h-1 bg-gray-200 rounded overflow-hidden">
-            <div className="w-24 h-full bg-indigo-500"></div>
-          </div>
-          <div className="flex flex-wrap sm:flex-row flex-col py-6 mb-0">
-            <h1 className="sm:w-2/5 text-gray-900 font-medium title-font text-4xl mb-2 sm:mb-0">
-              Introduction
-            </h1>
-          </div>
-          <p className="mb-8 leading-relaxed lg:text-xl text-lg">
-            "Welcome to the exciting world of Information Technology! This
-            course offers a practical understanding of essential concepts
-            shaping today's digital landscape. Whether you want to enhance your
-            skills, explore technology for personal growth, or build a strong
-            foundation for future studies, you'll find everything you need here.
-            We combine hands-on activities with theoretical knowledge, helping
-            you gain the confidence to navigate and succeed in a
-            technology-driven world."
+      <div className="w-full lg:w-4/5 mx-auto flex md:flex-nowrap flex-wrap md:space-x-6 ">
+        {/* Image Section */}
+        <img
+          alt="hero"
+          className="w-full md:w-1/2 lg:w-1/2 h-64 md:h-auto object-cover object-center rounded"
+          src={students}
+        />
+        {/* Text Section */}
+        <div className="w-full md:w-1/2 lg:pl-10 lg:py-6 mt-6 md:mt-0">
+          <h1 className="text-gray-900 text-2xl sm:text-3xl title-font font-medium mb-4">
+            Introduction
+          </h1>
+          <p className="leading-relaxed text-base sm:text-lg mb-4">
+            Welcome to the exciting world of Information Technology! This course
+            offers a practical understanding of essential concepts shaping
+            today's digital landscape. Whether you want to enhance your skills,
+            explore technology for personal growth, or build a strong foundation
+            for future studies, you'll find everything you need here.
           </p>
+          <button
+            className="flex text-white md:mx-[0] mx-auto bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded transition duration-200"
+            onClick={handleEnrollClick}
+          >
+            Enroll Now
+          </button>
         </div>
-        <div className="xl:w-2/5 xl:max-w-full max-w-[600px] ">
-          <img
-            className="object-cover object-center rounded"
-            alt="hero"
-            src={students}
-          />
-        </div>
-      </div>
-      <div className="bg-gray-900 text-white text-center py-4 mt-5 w-screen">
-        <h2 className="text-xl font-bold">
-          🚀 Unlock Your Future in IT: Enroll Now and Get 10% Off! 🎓
-        </h2>
-        <button
-          onClick={handleEnrollClick} // Attach the handler to the button click
-          className="mt-2 inline-block bg-[#59C4B4] text-white py-2 px-4 rounded transition duration-300 hover:bg-[#47AAB1]"
-        >
-          Enroll Now
-        </button>
       </div>
     </Element>
   );

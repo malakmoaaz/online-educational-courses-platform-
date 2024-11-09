@@ -53,7 +53,7 @@ function App() {
 
   return (
     <AuthProvider>
-      <div className="min-h-screen flex flex-col">
+      <div className="flex flex-col">
         <Routes>
           <Route
             path="/"
