@@ -8,10 +8,12 @@ const stripePromise = loadStripe(
 
 // Helper function to determine the API URL based on environment
 const getApiUrl = () => {
+  // Use localhost for local development
   if (window.location.hostname === "localhost") {
-    return "http://localhost:4000/create-checkout-session";
+    return "http://localhost:4000/api/create-checkout-session";
   }
-  return "https://it101-website.vercel.app/create-checkout-session";
+  // Use Vercel backend URL for production
+  return "https://it101-website.vercel.app/api/create-checkout-session"; // Replace with your deployed backend URL
 };
 
 const PurchaseButton = ({ courseId }) => {
