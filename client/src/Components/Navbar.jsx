@@ -99,7 +99,7 @@ function Navbar({ introHeight }) {
           Welcome to CTRL-S
         </div>
         <div className="md:text-2xl text-xl font-medium">
-          Secure your future with CTRL-S | Learn Practice Succeed
+          Secure your future with CTRL-S | Learn Practice Succeed 555333
         </div>
       </div>
     </header>
